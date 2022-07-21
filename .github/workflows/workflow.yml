@@ -7,14 +7,6 @@ on:
       - main
   workflow_dispatch:
 
-parameters:
-- name: customerPrefix
-  type: string
-  default: sgov
-- name: workload
-  type: string
-  default: ews
-
 jobs:
 
   # Build the application and database.
@@ -30,8 +22,8 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     needs: [build, lint]
     with:
-      customerPrefix: ${{ parameters.customerPrefix }}
-      workload: ${{ parameters.workload }}
+      customerPrefix: sgov
+      workload: ews
       environment: test
       resourceGroupName: rg-sgov-ews-test-01-web
       reviewApiUrl: https://sandbox.contoso.com/reviews
@@ -49,6 +41,8 @@ jobs:
     - build
     - deploy-test
     with:
+    customerPrefix: sgov
+      workload: ews
       environment: prod
       resourceGroupName: rg-sgov-ews-prod-01-web
       reviewApiUrl: https://api.contoso.com/reviews
