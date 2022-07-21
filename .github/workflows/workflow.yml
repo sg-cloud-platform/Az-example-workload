@@ -9,6 +9,10 @@ on:
 
 jobs:
 
+  # Build the application and database.
+  build:
+    uses: ./.github/workflows/build.yml
+
   # Lint the Bicep file.
   lint:
     uses: ./.github/workflows/lint.yml
@@ -16,7 +20,7 @@ jobs:
   # Deploy to the test environment.
   deploy-test:
     uses: ./.github/workflows/deploy.yml
-    needs: lint
+    needs: [build, lint]
     with:
       environmentType: Test
       resourceGroupName: ToyWebsiteTest
@@ -28,7 +32,10 @@ jobs:
   # Deploy to the production environment.
   deploy-production:
     uses: ./.github/workflows/deploy.yml
-    needs: deploy-test
+    needs:
+    - lint
+    - build
+    - deploy-test
     with:
       environmentType: Production
       resourceGroupName: ToyWebsiteProduction
