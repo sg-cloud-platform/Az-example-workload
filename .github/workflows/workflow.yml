@@ -41,7 +41,7 @@ jobs:
     - build
     - deploy-test
     with:
-    customerPrefix: sgov
+      customerPrefix: sgov
       workload: ews
       environment: prod
       resourceGroupName: rg-sgov-ews-prod-01-web
