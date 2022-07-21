@@ -25,9 +25,11 @@ jobs:
       environmentType: Test
       resourceGroupName: rg-sgov-ews-test-01-web
       reviewApiUrl: https://sandbox.contoso.com/reviews
+      sqlServerAdministratorLogin: TestToyCompanyAdmin
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS_TEST }}
       reviewApiKey: ${{ secrets.REVIEW_API_KEY_TEST }}
+      sqlServerAdministratorLoginPassword: ${{ secrets.SQL_SERVER_ADMINISTRATOR_LOGIN_PASSWORD_TEST }}
 
   # Deploy to the production environment.
   deploy-production:
@@ -40,6 +42,9 @@ jobs:
       environmentType: Production
       resourceGroupName: rg-sgov-ews-prod-01-web
       reviewApiUrl: https://api.contoso.com/reviews
+      sqlServerAdministratorLogin: ToyCompanyAdmin
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS_PRODUCTION }}
       reviewApiKey: ${{ secrets.REVIEW_API_KEY_PRODUCTION }}
+      sqlServerAdministratorLoginPassword: ${{ secrets.SQL_SERVER_ADMINISTRATOR_LOGIN_PASSWORD_PRODUCTION }}
+
