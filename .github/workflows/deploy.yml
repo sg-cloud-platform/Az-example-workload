@@ -3,7 +3,7 @@ name: deploy
 on:
   workflow_call:
     inputs:
-      environmentType:
+      environment:
         required: true
         type: string
       resourceGroupName:
@@ -13,6 +13,12 @@ on:
         required: true
         type: string
       sqlServerAdministratorLogin:
+        required: true
+        type: string
+      customerPrefix:
+        required: true
+        type: string
+      workload:
         required: true
         type: string
     secrets:
@@ -32,7 +38,7 @@ jobs:
        name: Sign in to Azure
        with:
          creds: ${{ secrets.AZURE_CREDENTIALS }}
-     - if: inputs.environmentType != 'Production'
+     - if: inputs.environment != 'prod'
        uses: azure/arm-deploy@v1
        name: Run preflight validation
        with:
@@ -40,13 +46,15 @@ jobs:
          resourceGroupName: ${{ inputs.resourceGroupName }}
          template: ./deploy/main.bicep
          parameters: >
-           environmentType=${{ inputs.environmentType }}
+           customerPrefix=${{ inputs.customerPrefix }}
+           workload=${{ inputs.workload }}
+           environment=${{ inputs.environment }}
            reviewApiUrl=${{ inputs.reviewApiUrl }}
            reviewApiKey=${{ secrets.reviewApiKey }}
            sqlServerAdministratorLogin=${{ inputs.sqlServerAdministratorLogin }}
            sqlServerAdministratorLoginPassword=${{ secrets.sqlServerAdministratorLoginPassword }}
          deploymentMode: Validate
-     - if: inputs.environmentType == 'Production'
+     - if: inputs.environment == 'prod'
        uses: azure/arm-deploy@v1
        name: Run what-if
        with:
@@ -54,7 +62,9 @@ jobs:
          resourceGroupName: ${{ inputs.resourceGroupName }}
          template: ./deploy/main.bicep
          parameters: >
-           environmentType=${{ inputs.environmentType }}
+           customerPrefix=${{ inputs.customerPrefix }}
+           workload=${{ inputs.workload }}
+           environment=${{ inputs.environment }}
            reviewApiUrl=${{ inputs.reviewApiUrl }}
            reviewApiKey=${{ secrets.reviewApiKey }}
            sqlServerAdministratorLogin=${{ inputs.sqlServerAdministratorLogin }}
@@ -63,7 +73,7 @@ jobs:
  
   deploy:
     needs: validate
-    environment: ${{ inputs.environmentType }}
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     outputs:
       appServiceAppName: ${{ steps.deploy.outputs.appServiceAppName }}
@@ -87,7 +97,9 @@ jobs:
         resourceGroupName: ${{ inputs.resourceGroupName }}
         template: ./deploy/main.bicep
         parameters: >
-           environmentType=${{ inputs.environmentType }}
+           customerPrefix=${{ inputs.customerPrefix }}
+           workload=${{ inputs.workload }}
+           environment=${{ inputs.environment }}
            reviewApiUrl=${{ inputs.reviewApiUrl }}
            reviewApiKey=${{ secrets.reviewApiKey }}
            sqlServerAdministratorLogin=${{ inputs.sqlServerAdministratorLogin }}
@@ -95,7 +107,7 @@ jobs:
 
   deploy-website:
     needs: deploy
-    environment: ${{ inputs.environmentType }}
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v2
@@ -111,7 +123,7 @@ jobs:
 
   deploy-database:
     needs: deploy
-    environment: ${{ inputs.environmentType }}
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v2
@@ -130,7 +142,7 @@ jobs:
     needs:
     - deploy
     - deploy-database
-    environment: ${{ inputs.environmentType }}
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -138,7 +150,7 @@ jobs:
       name: Sign in to Azure
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-    - if: inputs.environmentType != 'Production'
+    - if: inputs.environment != 'prod'
       uses: azure/sql-action@v1.2
       name: Add test data to database
       with:
@@ -148,7 +160,7 @@ jobs:
 
   seed-storage-account:
     needs: deploy
-    environment: ${{ inputs.environmentType }}
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -156,7 +168,7 @@ jobs:
       name: Sign in to Azure
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-    - if: inputs.environmentType != 'Production'
+    - if: inputs.environment != 'prod'
       uses: Azure/cli@v1
       name: Upload sample images
       with:

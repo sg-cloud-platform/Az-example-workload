@@ -1,16 +1,29 @@
 @description('The location into which your Azure resources should be deployed.')
 param location string = resourceGroup().location
 
-@description('Select the type of environment you want to provision. Allowed values are Production and Test.')
+@description('choose a suitable environment name')
 @allowed([
-  'Production'
-  'Test'
+  'wip'
+  'test'
+  'qa'
+  'prod'
 ])
-param environmentType string
+param environment string
 
-@description('A unique suffix to add to resource names that need to be globally unique.')
-@maxLength(13)
-param resourceNameSuffix string = uniqueString(resourceGroup().id)
+@description('choose a suitable customer prefix name')
+@maxLength(5)
+param customerPrefix string
+
+@description('choose a suitable workload name')
+@maxLength(5)
+param workload string
+
+@description('choose a suitable instance number. normally this will be 01 unless a duplicate is needed')
+@maxLength(2)
+param instance string = '01'
+
+@description('OPTIONAL - choose a suitable component function')
+param componentFunction string = ''
 
 @description('The URL to the product review API.')
 param reviewApiUrl string
@@ -27,13 +40,13 @@ param sqlServerAdministratorLogin string
 param sqlServerAdministratorLoginPassword string
 
 // Define the names for resources.
-var appServiceAppName = 'toy-website-${resourceNameSuffix}'
-var appServicePlanName = 'toy-website'
-var applicationInsightsName = 'toywebsite'
-var storageAccountName = 'mystorage${resourceNameSuffix}'
+var appServiceAppName = length(componentFunction) >= 1 ? 'app-${customerPrefix}${workload}${environment}${instance}${componentFunction}' : 'app-${customerPrefix}${workload}${environment}${instance}'
+var appServicePlanName = length(componentFunction) >= 1 ? 'asp-${customerPrefix}${workload}${environment}${instance}${componentFunction}' : 'asp-${customerPrefix}${workload}${environment}${instance}'
+var applicationInsightsName = length(componentFunction) >= 1 ? 'appi-${customerPrefix}${workload}${environment}${instance}${componentFunction}' : 'appi-${customerPrefix}${workload}${environment}${instance}'
+var storageAccountName = length(componentFunction) >= 1 ? 'st${customerPrefix}${workload}${environment}${instance}${componentFunction}' : 'st${customerPrefix}${workload}${environment}${instance}'
 var storageAccountImagesBlobContainerName = 'toyimages'
-var sqlServerName = 'toy-website-${resourceNameSuffix}'
-var sqlDatabaseName = 'Toys'
+var sqlServerName = length(componentFunction) >= 1 ? 'sql-${customerPrefix}${workload}${environment}${instance}${componentFunction}' : 'sql-${customerPrefix}${workload}${environment}${instance}'
+var sqlDatabaseName = length(componentFunction) >= 1 ? 'db-${customerPrefix}${workload}${environment}${instance}${componentFunction}' : 'db-${customerPrefix}${workload}${environment}${instance}'
 
 // Define the connection string to access Azure SQL.
 var sqlDatabaseConnectionString = 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabase.name};Persist Security Info=False;User ID=${sqlServerAdministratorLogin};Password=${sqlServerAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
@@ -82,7 +95,7 @@ var environmentConfigurationMap = {
 resource appServicePlan 'Microsoft.Web/serverfarms@2021-01-15' = {
   name: appServicePlanName
   location: location
-  sku: environmentConfigurationMap[environmentType].appServicePlan.sku
+  sku: environmentConfigurationMap[environment].appServicePlan.sku
 }
 
 resource appServiceApp 'Microsoft.Web/sites@2021-01-15' = {
@@ -145,7 +158,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   name: storageAccountName
   location: location
   kind: 'StorageV2'
-  sku: environmentConfigurationMap[environmentType].storageAccount.sku
+  sku: environmentConfigurationMap[environment].storageAccount.sku
 
   resource blobService 'blobServices' = {
     name: 'default'
@@ -182,7 +195,7 @@ resource sqlDatabase 'Microsoft.Sql/servers/databases@2021-02-01-preview' = {
   parent: sqlServer
   name: sqlDatabaseName
   location: location
-  sku: environmentConfigurationMap[environmentType].sqlDatabase.sku
+  sku: environmentConfigurationMap[environment].sqlDatabase.sku
 }
 
 output appServiceAppName string = appServiceApp.name
