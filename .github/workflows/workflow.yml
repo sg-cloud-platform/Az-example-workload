@@ -23,7 +23,7 @@ jobs:
     needs: [build, lint]
     with:
       environmentType: Test
-      resourceGroupName: ToyWebsiteTest
+      resourceGroupName: rg-sgov-ews-test-01-web
       reviewApiUrl: https://sandbox.contoso.com/reviews
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS_TEST }}
@@ -38,7 +38,7 @@ jobs:
     - deploy-test
     with:
       environmentType: Production
-      resourceGroupName: ToyWebsiteProduction
+      resourceGroupName: rg-sgov-ews-prod-01-web
       reviewApiUrl: https://api.contoso.com/reviews
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS_PRODUCTION }}
