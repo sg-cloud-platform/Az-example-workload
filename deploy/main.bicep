@@ -48,7 +48,7 @@ var environmentConfigurationMap = {
     }
     storageAccount: {
       sku: {
-        name: 'Standard_GRS'
+        name: 'Standard_LRS'
       }
     }
   }
