@@ -40,16 +40,26 @@ param sqlServerAdministratorLogin string
 param sqlServerAdministratorLoginPassword string
 
 // Define the names for resources.
-var appServiceAppName = length(componentFunction) >= 1 ? 'app-${customerPrefix}-${workload}-${environment}-${instance}-${componentFunction}' : 'app-${customerPrefix}-${workload}-${environment}-${instance}'
-var appServicePlanName = length(componentFunction) >= 1 ? 'asp-${customerPrefix}-${workload}-${environment}-${instance}-${componentFunction}' : 'asp-${customerPrefix}-${workload}-${environment}-${instance}'
-var applicationInsightsName = length(componentFunction) >= 1 ? 'appi-${customerPrefix}-${workload}-${environment}-${instance}-${componentFunction}' : 'appi-${customerPrefix}-${workload}-${environment}-${instance}'
-var storageAccountName = length(componentFunction) >= 1 ? 'st${customerPrefix}${workload}${environment}${instance}${componentFunction}' : 'st${customerPrefix}${workload}${environment}${instance}'
+var appServiceAppName = length(componentFunction) >= 1 ? 'app-${customerPrefix}-${workload}-${environment}-${locationShortName[location]}-${instance}-${componentFunction}' : 'app-${customerPrefix}-${workload}-${environment}-${locationShortName[location]}-${instance}'
+var appServicePlanName = length(componentFunction) >= 1 ? 'asp-${customerPrefix}-${workload}-${environment}-${locationShortName[location]}-${instance}-${componentFunction}' : 'asp-${customerPrefix}-${workload}-${environment}-${locationShortName[location]}-${instance}'
+var applicationInsightsName = length(componentFunction) >= 1 ? 'appi-${customerPrefix}-${workload}-${environment}-${locationShortName[location]}-${instance}-${componentFunction}' : 'appi-${customerPrefix}-${workload}-${environment}-${locationShortName[location]}-${instance}'
+var storageAccountName = length(componentFunction) >= 1 ? 'st${customerPrefix}${workload}${environment}${locationShortName[location]}${instance}${componentFunction}' : 'st${customerPrefix}${workload}${environment}${locationShortName[location]}${instance}'
 var storageAccountImagesBlobContainerName = 'toyimages'
-var sqlServerName = length(componentFunction) >= 1 ? 'sql-${customerPrefix}-${workload}-${environment}-${instance}-${componentFunction}' : 'sql-${customerPrefix}-${workload}-${environment}-${instance}'
-var sqlDatabaseName = length(componentFunction) >= 1 ? 'db-${customerPrefix}-${workload}-${environment}-${instance}-${componentFunction}' : 'db-${customerPrefix}-${workload}-${environment}-${instance}'
+var sqlServerName = length(componentFunction) >= 1 ? 'sql-${customerPrefix}-${workload}-${environment}-${locationShortName[location]}-${instance}-${componentFunction}' : 'sql-${customerPrefix}-${workload}-${environment}-${locationShortName[location]}-${instance}'
+var sqlDatabaseName = length(componentFunction) >= 1 ? 'db-${customerPrefix}-${workload}-${environment}-${locationShortName[location]}-${instance}-${componentFunction}' : 'db-${customerPrefix}-${workload}-${environment}-${locationShortName[location]}-${instance}'
 
 // Define the connection string to access Azure SQL.
 var sqlDatabaseConnectionString = 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabase.name};Persist Security Info=False;User ID=${sqlServerAdministratorLogin};Password=${sqlServerAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+
+var locationShortName = {
+  'uksouth': 'uks'
+  'ukwest': 'ukw'
+  'northeurope': 'neu'
+  'westeurope': 'weu'
+  'centralus': 'cus'
+  'southcentralus': 'sus'
+  'westus': 'wus'
+}
 
 // Define the SKUs for each component based on the environment type.
 var environmentConfigurationMap = {
